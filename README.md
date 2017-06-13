@@ -1,4 +1,4 @@
-# RPC I2C Service
+# RPC Service - I2C
 
 This service provides an ability to manage I2C peripherals on devices remotely.
 It is possible to call this service programmatically via serial, HTTP/RESTful,
