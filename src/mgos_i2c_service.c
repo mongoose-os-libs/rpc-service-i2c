@@ -67,10 +67,10 @@ static void i2c_read_handler(struct mg_rpc_request_info *ri, void *cb_arg,
 out:
   if (err_code != 0) {
     mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
-    ri = NULL;
   } else {
     mg_rpc_send_responsef(ri, "{data_hex: %H}", len, buf);
   }
+  ri = NULL;
   if (buf != NULL) free(buf);
   (void) cb_arg;
   (void) fi;
@@ -82,7 +82,7 @@ static void i2c_write_handler(struct mg_rpc_request_info *ri, void *cb_arg,
   int addr, len;
   uint8_t *data = NULL;
   int err_code = 0;
-  const char *err_msg = "OK";
+  const char *err_msg = NULL;
   struct mgos_i2c *i2c = mgos_i2c_get_global();
   if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &len, &data) != 2) {
     err_code = 400;
@@ -100,7 +100,11 @@ static void i2c_write_handler(struct mg_rpc_request_info *ri, void *cb_arg,
   }
 out:
   if (data != NULL) free(data);
-  mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  if (err_code != 0) {
+    mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  } else {
+    mg_rpc_send_responsef(ri, NULL);
+  }
   ri = NULL;
   (void) cb_arg;
   (void) fi;
@@ -112,7 +116,7 @@ static void i2c_read_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
   int addr, reg, value;
   struct mgos_i2c *i2c = mgos_i2c_get_global();
   int err_code = 0;
-  const char *err_msg = "OK";
+  const char *err_msg = NULL;
   if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &reg) != 2) {
     err_code = 400;
     err_msg = "addr and reg are required";
@@ -134,7 +138,11 @@ static void i2c_read_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
     goto out;
   }
 out:
-  mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  if (err_code != 0) {
+    mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  } else {
+    mg_rpc_send_responsef(ri, NULL);
+  }
   ri = NULL;
   (void) cb_arg;
   (void) fi;
@@ -146,7 +154,7 @@ static void i2c_write_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
   int addr, reg, value;
   struct mgos_i2c *i2c = mgos_i2c_get_global();
   int err_code = 0;
-  const char *err_msg = "OK";
+  const char *err_msg = NULL;
   if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &reg, &value) != 3) {
     err_code = 400;
     err_msg = "add, reg and value are required";
@@ -169,7 +177,11 @@ static void i2c_write_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
     goto out;
   }
 out:
-  mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  if (err_code != 0) {
+    mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
+  } else {
+    mg_rpc_send_responsef(ri, NULL);
+  }
   ri = NULL;
   (void) cb_arg;
   (void) fi;
