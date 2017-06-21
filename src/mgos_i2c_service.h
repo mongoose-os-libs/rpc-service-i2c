@@ -8,8 +8,6 @@
 
 #include "fw/src/mgos_features.h"
 
-#if MGOS_ENABLE_I2C
-
 #include "fw/src/mgos_init.h"
 
 #ifdef __cplusplus
@@ -22,5 +20,4 @@ bool mgos_rpc_service_i2c_init(void);
 }
 #endif /* __cplusplus */
 
-#endif /* MGOS_ENABLE_I2C */
 #endif /* CS_FW_SRC_MGOS_I2C_SERVICE_H_ */

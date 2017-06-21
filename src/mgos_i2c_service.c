@@ -7,10 +7,11 @@
 
 #include "mgos_rpc.h"
 
+#include "mgos_i2c.h"
+
 #include "common/json_utils.h"
 #include "common/mg_str.h"
 #include "fw/src/mgos_hal.h"
-#include "fw/src/mgos_i2c.h"
 
 static void i2c_scan_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                              struct mg_rpc_frame_info *fi, struct mg_str args) {
