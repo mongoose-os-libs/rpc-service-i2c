@@ -142,7 +142,7 @@ out:
   if (err_code != 0) {
     mg_rpc_send_errorf(ri, err_code, "%s", err_msg);
   } else {
-    mg_rpc_send_responsef(ri, NULL);
+    mg_rpc_send_responsef(ri, "{value: %d}", value);
   }
   ri = NULL;
   (void) cb_arg;
