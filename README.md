@@ -20,7 +20,7 @@ Example usage:
 
 ## I2C.Read
 Read data from the I2C device. Arguments:
-```json
+```javascript
 {
   "addr: 31,    // Required. Device address.
   "len": 2      // Required. Number of bytes to read.
@@ -28,7 +28,7 @@ Read data from the I2C device. Arguments:
 ```
 
 Reply:
-```json
+```javascript
 {
   // Hex-encoded data. Each byte is encoded as XX hex code, e.g. 0x00 0x1d:
   "data_hex": "001d"
@@ -45,7 +45,7 @@ Example usage:
 
 ## I2C.Write
 Write data to the I2C device. Arguments:
-```json
+```javascript
 {
   "addr: 31,              // Required. Device address.
   "data_hext": "1f3c6a"   // Required. Hex-encoded data to write
@@ -60,7 +60,7 @@ Error: remote error: I2C write failed</code></pre>
 
 ## I2C.ReadRegB
 Read 1-byte register value. Arguments:
-```json
+```javascript
 {
   "addr: 31,  // Required. Device address.
   "reg": 0    // Required. Register number.
@@ -77,7 +77,7 @@ Example usage:
 
 ## I2C.WriteRegB
 Write 1-byte register value. Arguments:
-```json
+```javascript
 {
   "addr: 31,    // Required. Device address.
   "reg": 0,     // Required. Register number.
