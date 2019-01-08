@@ -29,7 +29,9 @@ static void i2c_scan_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                              struct mg_rpc_frame_info *fi, struct mg_str args) {
   struct mbuf rb;
   struct json_out out = JSON_OUT_MBUF(&rb);
-  struct mgos_i2c *i2c = mgos_i2c_get_global();
+  int bus = 0;
+  json_scanf(args.p, args.len, ri->args_fmt, &bus);
+  struct mgos_i2c *i2c = mgos_i2c_get_bus(bus);
   if (i2c == NULL) {
     mg_rpc_send_errorf(ri, 503, "I2C is disabled");
     ri = NULL;
@@ -53,16 +55,18 @@ static void i2c_scan_handler(struct mg_rpc_request_info *ri, void *cb_arg,
 
 static void i2c_read_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                              struct mg_rpc_frame_info *fi, struct mg_str args) {
-  int addr, len;
+  int bus = 0, addr = -1, len = -1;
   uint8_t *buf = NULL;
   int err_code = 0;
   const char *err_msg = NULL;
-  struct mgos_i2c *i2c = mgos_i2c_get_global();
-  if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &len) != 2) {
+  struct mgos_i2c *i2c;
+  json_scanf(args.p, args.len, ri->args_fmt, &bus, &addr, &len);
+  if (addr < 0 || len < 0) {
     err_code = 400;
     err_msg = "addr and len are required";
     goto out;
   }
+  i2c = mgos_i2c_get_bus(bus);
   if (i2c == NULL) {
     err_code = 503;
     err_msg = "I2C is disabled";
@@ -92,16 +96,18 @@ out:
 static void i2c_write_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                               struct mg_rpc_frame_info *fi,
                               struct mg_str args) {
-  int addr, len;
+  int bus = 0, addr = -1, len = -1;
   uint8_t *data = NULL;
   int err_code = 0;
   const char *err_msg = NULL;
-  struct mgos_i2c *i2c = mgos_i2c_get_global();
-  if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &len, &data) != 2) {
+  struct mgos_i2c *i2c;
+  json_scanf(args.p, args.len, ri->args_fmt, &bus, &addr, &len, &data);
+  if (addr < 0 || data == NULL) {
     err_code = 400;
     err_msg = "addr and data_hex are required";
     goto out;
   }
+  i2c = mgos_i2c_get_bus(bus);
   if (i2c == NULL) {
     err_code = 503;
     err_msg = "I2C is disabled";
@@ -126,15 +132,17 @@ out:
 static void i2c_read_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                                  struct mg_rpc_frame_info *fi,
                                  struct mg_str args) {
-  int addr, reg, value;
-  struct mgos_i2c *i2c = mgos_i2c_get_global();
+  int bus = 0, addr = -1, reg = -1, value;
+  struct mgos_i2c *i2c;
   int err_code = 0;
   const char *err_msg = NULL;
-  if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &reg) != 2) {
+  json_scanf(args.p, args.len, ri->args_fmt, &bus, &addr, &reg);
+  if (addr < 0 || reg < 0) {
     err_code = 400;
     err_msg = "addr and reg are required";
     goto out;
   }
+  i2c = mgos_i2c_get_bus(bus);
   if (i2c == NULL) {
     err_code = 503;
     err_msg = "I2C is disabled";
@@ -164,15 +172,17 @@ out:
 static void i2c_write_reg_handler(struct mg_rpc_request_info *ri, void *cb_arg,
                                   struct mg_rpc_frame_info *fi,
                                   struct mg_str args) {
-  int addr, reg, value;
-  struct mgos_i2c *i2c = mgos_i2c_get_global();
+  int bus = 0, addr = -1, reg = -1, value = -1;
+  struct mgos_i2c *i2c;
   int err_code = 0;
   const char *err_msg = NULL;
-  if (json_scanf(args.p, args.len, ri->args_fmt, &addr, &reg, &value) != 3) {
+  json_scanf(args.p, args.len, ri->args_fmt, &bus, &addr, &reg, &value);
+  if (addr < 0 || reg < 0 || value < 0) {
     err_code = 400;
     err_msg = "add, reg and value are required";
     goto out;
   }
+  i2c = mgos_i2c_get_bus(bus);
   if (i2c == NULL) {
     err_code = 503;
     err_msg = "I2C is disabled";
@@ -202,18 +212,20 @@ out:
 
 bool mgos_rpc_service_i2c_init(void) {
   struct mg_rpc *c = mgos_rpc_get_global();
-  mg_rpc_add_handler(c, "I2C.Scan", "", i2c_scan_handler, NULL);
-  mg_rpc_add_handler(c, "I2C.Read", "{addr: %d, len: %d}", i2c_read_handler,
-                     NULL);
-  mg_rpc_add_handler(c, "I2C.Write", "{addr: %d, data_hex: %H}",
+  mg_rpc_add_handler(c, "I2C.Scan", "{bus: %d}", i2c_scan_handler, NULL);
+  mg_rpc_add_handler(c, "I2C.Read", "{bus: %d, addr: %d, len: %d}",
+                     i2c_read_handler, NULL);
+  mg_rpc_add_handler(c, "I2C.Write", "{bus: %d, addr: %d, data_hex: %H}",
                      i2c_write_handler, NULL);
-  mg_rpc_add_handler(c, "I2C.ReadRegB", "{addr: %d, reg: %d}",
+  mg_rpc_add_handler(c, "I2C.ReadRegB", "{bus: %d, addr: %d, reg: %d}",
                      i2c_read_reg_handler, (void *) 0);
-  mg_rpc_add_handler(c, "I2C.ReadRegW", "{addr: %d, reg: %d}",
+  mg_rpc_add_handler(c, "I2C.ReadRegW", "{bus: %d, addr: %d, reg: %d}",
                      i2c_read_reg_handler, (void *) 1);
-  mg_rpc_add_handler(c, "I2C.WriteRegB", "{addr: %d, reg: %d, value: %d}",
+  mg_rpc_add_handler(c, "I2C.WriteRegB",
+                     "{bus: %d, addr: %d, reg: %d, value: %d}",
                      i2c_write_reg_handler, (void *) 0);
-  mg_rpc_add_handler(c, "I2C.WriteRegW", "{addr: %d, reg: %d, value: %d}",
+  mg_rpc_add_handler(c, "I2C.WriteRegW",
+                     "{bus: %d, addr: %d, reg: %d, value: %d}",
                      i2c_write_reg_handler, (void *) 1);
   return true;
 }
