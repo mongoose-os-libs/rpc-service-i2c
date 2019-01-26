@@ -39,7 +39,7 @@ static void i2c_scan_handler(struct mg_rpc_request_info *ri, void *cb_arg,
   }
   mbuf_init(&rb, 0);
   json_printf(&out, "[");
-  for (int addr = 0; addr < 0x78; addr++) {
+  for (int addr = 1; addr < 0x78; addr++) {
     if (mgos_i2c_write(i2c, addr, NULL, 0, true /* stop */)) {
       json_printf(&out, "%s%d", (rb.len > 1 ? ", " : ""), addr);
     }
